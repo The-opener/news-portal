@@ -28,23 +28,45 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $user = Auth::user();
 
         $allowedCategoryIds = $user->categories->pluck('id')->toArray();
 
-        if (!in_array($request->category_id, $allowedCategoryIds)) {
+        if (!in_array((int) $request->category_id, $allowedCategoryIds)) {
             return redirect()->back()->with('error', 'You are not allowed to post in this category.');
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('posts', 'public');
+        }
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('posts', 'public');
         }
 
         Post::create([
             'title' => $request->title,
             'content' => $request->content,
+            'image' => $imagePath,
             'category_id' => $request->category_id,
             'user_id' => $user->id,
         ]);
 
         return redirect()->back()->with('success', 'Post created successfully.');
+    }
+
+    public function destroy(Post $post)
+    {
+        if ($post->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'You can only delete your own posts.');
+        }
+
+        $post->delete();
+
+        return redirect()->back()->with('success', 'Post deleted successfully.');
     }
 }

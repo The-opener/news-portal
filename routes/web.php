@@ -27,6 +27,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth', 'author'])->group(function () {
     Route::get('/author/dashboard', [PostController::class, 'dashboard'])->name('author.dashboard');
     Route::post('/author/posts', [PostController::class, 'store'])->name('author.posts.store');
+    Route::delete('/author/posts/{post}', [PostController::class, 'destroy'])->name('author.posts.destroy');
 });
 
 Route::middleware('auth')->group(function () {
